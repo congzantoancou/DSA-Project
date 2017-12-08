@@ -124,7 +124,7 @@ void login(linklist l)
 							temp_pin = getpassword("PIN: ");
 							// Copy (string) temp_pin to (char*) pin;
 							//string.copy(char*, num_of_char, begin);
-							size_t length = temp_pin.copy(pin, 6, 0);
+							size_t length = temp_pin.copy(pin, temp_pin.length(), 0);
 							pin[length] = '\0';
 							cout << endl;
 						} while (strlen(pin) > 6);
