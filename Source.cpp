@@ -75,12 +75,13 @@ void loadData(linklist &l);
 void loadDataID(linklist &l);
 void writeDataID(linklist l, char *id);
 void displayData(linklist l); // for deverloper
-char *login(linklist l);
+char *login(linklist l); // Dang nhap
 char *convertStoC(string s); // Convert string to char*
 void checkBalance(linklist l, char *id); // Kiem tra so zu
 double withDraw(linklist &l, char *id); // Rut tien
 double convertCurrency(double Amount, char *from, char *to); // Chuyen doi ty gia tien te
-
+void transfer(); // chuyen tien
+void reviewTransactions(); // Xem lai noi zung jao zich
 
 int main()
 {
@@ -98,7 +99,11 @@ int main()
 	}
 	else
 	{
-		cout << "Login successfully with the id: " << id << endl;
+		cout << "********** USER MANAGEMENT ************" << endl
+			<< "1. Balance enquiry" << endl
+			<< "2. Withdraw money" << endl
+			<< "3. Transfer" << endl
+			<< "4. Review transactions" << endl;
 	}
 
 	cout << endl;
@@ -302,22 +307,32 @@ void loadDataID(linklist &l)
 {
 	ifstream fi;
 	node *p;
-	char *file_id = new char[20]; // Bien tam luu tru id
+	char *file_id_url = new char[128]; // Bien tam luu tru duong dan file id
+	// ATTENTION! CHANGE file_id_url TO YOUR CURRENT URL OF DIRECTORY
+	bool checkingError = false; // Kiem tra doc file co bi loi hay khong
 	for (p = l.pHead; p != NULL; p = p->pNext)
-	{
-		strcpy(file_id, p->data.id);
-		fi.open(strcat(file_id, ".dat")); // Mo^ file moi'
-		if (!fi && p->pNext != NULL)
+	{	
+		strcpy(file_id_url, "D:\\Source\\DSA\\Team-Project\\Team-Project\\TaiKhoan\\");
+		strcat(file_id_url, p->data.id);
+		strcat(file_id_url, ".dat");
+		cout << file_id_url << endl;
+		system("pause");
+		fi.open(file_id_url); // Mo^ file moi'
+		if (!fi && p != NULL)
 		{
-			cout << "Opps! Not found the data file of \"" << file_id << "\"." << endl;
-			return;
+			checkingError = true;
+			cout << "Opps! Not found the data file of \"" << file_id_url << "\"." << endl;
 		}
-		fflush(stdin); fi.getline(p->data.name, 32);
-		fi >> p->data.balance;
-		fi >> p->data.currency;
-		fi.close(); // Dong' file
+		else
+		{
+			fflush(stdin); fi.getline(p->data.name, 32);
+			fi >> p->data.balance;
+			fi >> p->data.currency;
+			fi.close(); // Dong' file
+		}
 	}
-	cout << "(+) Loading data file of \"[id].dat\" successfully.\n";
+	if (checkingError == false)
+		cout << "(+) Loading data file of \"[id].dat\" successfully.\n";
 }
 
 // Tai du lieu trong file "TheTu.dat";
