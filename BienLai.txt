@@ -1,0 +1,22 @@
+	_________________________________________________________
+
+							ANY BANK
+	_________________________________________________________
+
+	LOCATION:       53 VO VAN NGAN
+      F. LINH CHIEU, THU DUC DIST.                  NY
+
+	CARD NO: 10101010101010
+
+                Date      Time      Terminal
+          29/12/2017  00FF1942        QRJ481
+
+	SEQ NBR:      3478              AMT:              100000
+                          ATM OWNER FEE:                3000
+                                  TOTAL:              103000
+
+	SAVING WITHDRAWAL
+	AVAILABLE BALANCE                        484500
+	BALANCE                                  484500
+
+				Thank you for use our service!
