@@ -9,14 +9,12 @@
 	CARD NO: 10101010101010
 
                 Date      Time      Terminal
-          29/12/2017  00FF1942        QRJ481
+          29/12/2017  13:28:47        QRJ481
 
-	SEQ NBR:      3478              AMT:              100000
-                          ATM OWNER FEE:                3000
-                                  TOTAL:              103000
+	SEQ NBR:      3478
 
-	SAVING WITHDRAWAL
-	AVAILABLE BALANCE                        484500
-	BALANCE                                  484500
+
+	AVAILABLE BALANCE                        789400
+	BALANCE                                  789400
 
 				Thank you for use our service!

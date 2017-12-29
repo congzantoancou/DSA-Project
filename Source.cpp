@@ -16,7 +16,7 @@
 #include <time.h>
 #include <ctime>
 #include <vector>
-#define atm_owner_fee 3/100
+#define atm_owner_fee 4/100
 #define tab '\t'
 #define dtab "\t\t"
 #define ttab "\t\t\t"
@@ -28,8 +28,6 @@
 #define dline "_________________________________________________________\n"
 using namespace std;
 HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
-ofstream gi;
-ifstream doc;
 time_t theTime = time(NULL);
 struct tm *aTime = localtime(&theTime);
 
@@ -172,8 +170,11 @@ int main()
 			drawFunction("4. VIEW TRANSACTIONS", 'R');
 			drawFunction("5. CHANGE PIN CODE", 'L');
 			drawFunction("0. GETBACK CARD", 'R');
+			cout << tab << dline;
 			cout << tab << "Choose the service: ";
 			cin >> choice;
+			if (choice < 0)
+				choice = 0;
 
 			// VARIABLE USING ON SWITCH
 			// General
@@ -194,8 +195,8 @@ int main()
 				alert("BALANCE ENQUIRY");
 				cout << tab;
 				checkBalance(l, id);
-				cout << endl << tab << dline << tab;
-				cout << tab << "Do you want to print a receipt? (y/n)" << tab;
+				cout << endl << tab << dline << dtab;
+				cout << "Do you want to print a receipt? (y/n)" << tab;
 				selection = getch();
 				cout << endl;
 				if (selection == 'y' || selection == 'Y')
@@ -212,7 +213,7 @@ int main()
 			case 2:
 				alert("WITHDRAW MONEY");
 				// Nhap
-				cout << dtab << "Enter Amount: ";
+				cout << tab << "Enter Amount: ";
 				cin.ignore();  inputNum(amount);
 				cout << tab << dline << endl << tab;
 				// Thuc thi
@@ -222,7 +223,7 @@ int main()
 				{
 					cout << dtab << "Transaction was successful!" << endl;
 					cout << endl << tab << dline << dtab;
-					cout << tab << "Do you want to print a receipt? (y/n) >";
+					cout << "Do you want to print a receipt? (y/n) >";
 					selection = getch();
 					cout << endl;
 					if (selection == 'y' || selection == 'Y')
@@ -355,6 +356,7 @@ char randomChar()
 
 void printReceipt(linklist l, char *id, char type, double cash)
 {
+	ofstream gi;
 	node *p;
 	for (p = l.pHead; p != NULL; p = p->pNext)
 		if (strcmp(p->data.id, id) == 0)
@@ -371,7 +373,7 @@ void printReceipt(linklist l, char *id, char type, double cash)
 		gi << setw(34) << "F. LINH CHIEU, THU DUC DIST." << setw(20) << "NY" << dendl;
 		gi << tab << "CARD NO: " << p->data.id << dendl;
 		gi << setw(20) << "Date" << setw(10) << "Time" << setw(14) << "Terminal" << endl;
-		gi << setw(20) << getDate() << setw(10) << getTime << setw(14) << randomString(6) << dendl;
+		gi << setw(20) << getDate() << setw(10) << getTime() << setw(14) << randomString(6) << dendl;
 		gi << tab << "SEQ NBR:" << setw(10) << 1000 + rand() % 9000;
 		if (type == 'W')
 		{
@@ -570,6 +572,7 @@ string convertI2S(int num)
 
 void reviewTransactions(char *id)
 {
+	ifstream doc;
 	char *url = getURL(id, "GiaoDich");
 	doc.open(url);
 	if (!doc)
@@ -783,7 +786,7 @@ double withDraw(linklist &l, char *id, double amount, char *id_passive, char *na
 				counter++;
 				if (counter >= 3 && !checkInput) // Too many time invalid inputed and the invalid input
 				{
-					cout << endl << tab << dline << tab;
+					cout << endl << tab << dline << dtab;
 					cout << "Do you want to do the other transaction? (y/n)>";
 					char choice = getch();
 					cout << endl << tab;
@@ -805,7 +808,7 @@ double withDraw(linklist &l, char *id, double amount, char *id_passive, char *na
 				if (transaction_type == "W")
 				{
 					// Xac nhan so tien rut
-					cout << ttab << "******* Confirm *******" << endl << ttab
+					cout << dtab << "******* Confirm *******" << endl << ttab
 						<< "* Amount: " << amount << space << p->data.currency << endl << ttab
 						<< "* Agree? (y/n) >";
 					char choice = getch();
@@ -959,6 +962,7 @@ char *getURL(char *id, char* folder)
 // Ghi zu lieu vao file "TheTu.dat";
 void writeData(linklist l)
 {
+	ofstream gi;
 	gi.open("TheTu.dat");
 	if (!gi) // Kiem tra tac vu doc file
 	{
@@ -980,6 +984,7 @@ void writeData(linklist l)
 // Ghi zu lieu vao file "\GiaoDich\[id].dat";
 void writeHistory(linklist l, char *id, double amount, char *id_passive, char *name_passive, string transaction_type)
 {
+	ofstream gi;
 	// Transaction type: w: withdraw, s: send, r: receive
 	char *url = getURL(id, "GiaoDich");
 	gi.open(url, ios::app);
@@ -1010,6 +1015,7 @@ void writeHistory(linklist l, char *id, double amount, char *id_passive, char *n
 // Ghi zu lieu vao file "\TaiKhoan\[id].dat";
 void writeDataID(linklist l, char *id)
 {
+	ofstream gi;
 	char *url = getURL(id, "TaiKhoan");
 	gi.open(url);
 	if (!gi) // Kiem tra tac vu doc file
@@ -1036,6 +1042,7 @@ void writeDataID(linklist l, char *id)
 // Tai du lieu trong file "\TaiKhoan\[id].dat";
 void loadDataID(linklist &l)
 {
+	ifstream doc;
 	node *p;
 	char *url; // Bien tam luu tru duong dan file id
 	bool checkingError = false; // Kiem tra doc file co bi loi hay khong
@@ -1062,6 +1069,7 @@ void loadDataID(linklist &l)
 // Tai du lieu trong file "TheTu.dat";
 void loadData(linklist &l)
 {
+	ifstream doc;
 	doc.open("TheTu.dat");
 	if (!doc)
 	{
