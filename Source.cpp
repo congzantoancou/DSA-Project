@@ -1,6 +1,6 @@
 ﻿
 /*
-* PHAN MEM MO PHONG MAY ATM
+* CHUONG TRINH MO PHONG MAY ATM
 * Do an mon: Cau truc du lieu va giai thuat
 * Thuc hien: Nhom 4
 */
@@ -17,11 +17,13 @@
 #include <time.h>
 #include <ctime>
 #include <vector>
-#define atm_owner_fee 4/100
+#define atm_owner_fee 4/10000 // 0.04%
+
 #define dot '.'
 #define tab '\t'
 #define dtab "\t\t"
 #define ttab "\t\t\t"
+#define dash '_'
 #define colon ':'
 #define space ' '
 #define slash '/'
@@ -171,7 +173,7 @@ string getTime();
 string getDate();
 char *getURL(char *file_name, char *folder); // DIEU CHINH DIA CHI FILES 
 char *convertStoC(string s); // Convert string to char*
-string convertI2S(int num); //Convert integer to string
+string convertI2S(long long num); //Convert integer to string
 double convertCurrency(double Amount, char *from, char *to); // Chuyen doi ty gia tien te
 void alert(char *string); // To mau thong bao
 void paintGreen(char *string);
@@ -182,7 +184,7 @@ void paintWhite();
 void eraseColor();
 double inputNum();
 void printBankLabel();
-void printReceipt(linklist l, char *ID, char *type, double); // In bien lai
+void printReceipt(linklist l, char *ID, string type, double); // In bien lai
 char randomChar();
 string randomString(int);
 void waiting(int);
@@ -200,6 +202,7 @@ string setPrecision(double amount, int streamsize);
 void setColor(int colorcode);
 color setColor(int color1, int color2, string type);
 bool isLocked(linklist l, char *id);
+void printLine(int length);
 
 // ++++++++++++++++++ MAIN +++++++++++++++++++
 
@@ -290,8 +293,8 @@ int main()
 				if (cash != 0.0)
 				{
 					cout << dtab << "Transaction was successful!" << endl;
-					cout << endl << tab << dline << endl << dtab;
-					cout << "Do you want to print a receipt? (y/n) >";
+					cout << endl << tab << dline << endl;
+					cout << dtab << "Do you want to print a receipt? (y/n) >";
 					selection = getch();
 					cout << endl;
 					if (selection == 'y' || selection == 'Y'|| selection == 13)
@@ -318,6 +321,19 @@ int main()
 				if (checkTransaction)
 				{
 					cout << dtab << "Transaction was successful!" << endl;
+					cout << endl << tab << dline << endl;
+					cout << dtab << "Do you want to print a receipt? (y/n) >";
+					selection = getch();
+					cout << endl;
+					if (selection == 'y' || selection == 'Y'|| selection == 13)
+					{
+						cout << dtab << "Printing ";
+						printReceipt(l, ID, "send", amount);
+							waiting(4);
+						cout << endl;
+						cout << dtab <<"Done" << endl << dtab;
+						pause;
+					}
 					cout << endl << tab << dline << endl;
 					cout << dtab << "Do you want to do other transtaction? (y/n)!";
 					selection = getch();
@@ -361,8 +377,8 @@ int main()
 			exit:default:
 				cout << endl;
 				cout << tab << dline << endl;
-				cout << dtab << (char)3 << " Thank you for using our service! " << (char)3 << endl;
-				Sleep(4000);
+				cout << dtab << (char)3 << " Thank you for using our service! " << (char)3;
+				hold(4);
 				exit(1);
 				break;
 			}
@@ -378,7 +394,7 @@ int main()
 // ****************** MAIN FUNCTIONS ********************
 //_______________________________________________________
 
-void printReceipt(linklist l, char *ID, char *type, double cash)
+void printReceipt(linklist l, char *ID, string type, double cash)
 {
 	ofstream gi;
 	node *p;
@@ -401,19 +417,22 @@ void printReceipt(linklist l, char *ID, char *type, double cash)
 		gi << setw(20) << "Date" << setw(10) << "Time" << setw(14) << "Terminal" << endl;
 		gi << setw(20) << getDate() << setw(10) << getTime() << setw(14) << randomString(6) << dendl;
 		gi << tab << "SEQ NBR:" << setw(10) << 1000 + rand() % 9000;
-		if (type == "with")
+		if (type != "")
 		{
 			gi << setw(18) << "AMT:" << setw(20) << displayCurrency(cash, p->data.currency) << endl;
+			double fee; // Phí chuyên^ tiên`
+			if (type == "send")
+				 fee = cash * atm_owner_fee;
 			gi << setw(40) << "ATM OWNER FEE:" 
-				<< setw(20) << displayCurrency(cash * atm_owner_fee, p->data.currency) << endl;
-			gi << setw(40) << "TOTAL:" << setw(20) << displayCurrency(cash + cash * atm_owner_fee, p->data.currency) << dendl;
+				<< setw(20) << displayCurrency(fee, p->data.currency) << endl;
+			gi << setw(40) << "TOTAL:" << setw(20) << displayCurrency(cash + fee, p->data.currency) << dendl;
 			gi << tab << "SAVING WITHDRAWAL" << endl;
 		}
 		else
-			gi << endl << endl << endl;
+			gi << dendl << endl;
 		gi << tab << "AVAILABLE BALANCE" << setw(30) << displayCurrency(p->data.balance, p->data.currency) << endl;
 		gi << tab << "BALANCE" << setw(40) << displayCurrency(p->data.balance, p->data.currency) << dendl;
-		gi << dtab << dtab << (char)3 << "Thank you for using our service!" << (char)3 << endl;
+		gi << dtab << tab << (char)3 << "Thank you for using our service!" << (char)3 << endl;
 	}
 }
 
@@ -678,9 +697,9 @@ double withDraw(linklist &l, char *ID, double amount, char *ID_passive, char *na
 				if (transaction_type == "with")
 				{
 					// Xac nhan so tien rut
-					cout << endl << ttab << "************** Confirm ***************" << endl << ttab
-						<< "* Amount: " << amount << space << p->data.currency << endl << ttab
-						<< "* Agree? (y/n) >";
+					cout << endl << dtab << "************** Confirm ***************" << endl
+						<< dtab	<< "* Amount: " << amount << space << p->data.currency << endl 
+						<< dtab << "* Agree? (y/n) >";
 					char choice = getch();
 					cout << endl << tab;
 					if (choice == 'n' || choice == 'N')
@@ -694,7 +713,10 @@ double withDraw(linklist &l, char *ID, double amount, char *ID_passive, char *na
 				// Chap nhan so tien rut
 				result = amount;
 				// Xu li co so zu lieu trong list
-				p->data.balance = p->data.balance - amount - amount*atm_owner_fee;
+				p->data.balance = p->data.balance - amount;
+				if (transaction_type == "send") 
+					p->data.balance = p->data.balance - amount*atm_owner_fee; // Phí chuyên^ tiên`
+					
 				// Ghi zu lieu vao file
 				writeDataID(l, ID);
 				writeHistory(l, ID, amount, ID_passive, name_passive, transaction_type);
@@ -1391,7 +1413,7 @@ char *getURL(char *ID, char* folder)
 	return url;
 }
 
-string convertI2S(int num)
+string convertI2S(long long num)
 {
 	string string;
 	if (num < 10)
@@ -1565,7 +1587,7 @@ bool isvalid(double amount, double balance, char *currency)
 		cout << dtab << "The balance after withdraw is not allow lower than 50000 VND." << endl;
 		result = false;
 	}
-	cout << tab << dline << endl;
+	cout << endl;
 	return result;
 }
 
@@ -1617,4 +1639,13 @@ char randomChar()
 {
 	char c = 65 + rand() % 25;
 	return c;
+}
+
+void printLine(int length)
+{
+	int i;
+	for (i = 0; i < length; i++)
+	{
+		cout << dash;
+	}
 }
