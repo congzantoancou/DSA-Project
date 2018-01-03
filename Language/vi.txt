@@ -1,0 +1,61 @@
+LoginFail=	Dang nhap that bai! Xin hay nhan lai the
+// Menu
+BalanceEnquiry=	KIEM TRA SO DU
+Withdraw=	RUT TIEN
+Transfer=	CHUYEN TIEN
+ViewTrans=	XEM LICH SU GD
+ChangePin=	DOI MA PIN
+Deposite=	GUI TIEN
+Getback=	HUY GIAO DICH
+// Switch key
+ChooseService=	Chon chuc nang
+AskPrintReceipt=	Ban co muon in hoa don khong? (y/n)
+Printing=	Dang in
+Done=	Xong
+EnterAmount=	Nhap so tien
+TransSuccess=	Giao dich thanh cong!
+EnterRecID=	Nhap ID nhan
+AskOtherTrans=	Ban co muong thuc hien giao dich khac khong? (y/n)
+NewPin=	Ma PIN moi
+InvalidPin=	Ma PIN khong hop le
+ChangePinSuccess=	Doi ma pin thanh cong!
+SorryBuilding=	Xin loi! Chuc nang nay dang phat trien
+ThankUsing=	Cam on da su dung dich vu cua chung toi!
+// Change PIN
+NewPinCannot=	Ma PIN moi khong duoc trung voi ma PIN hien tai
+Confirm=	Xac nhan
+NotMatch=	Khong khop
+// Review Transaction
+SorryNoData=	Xin loi! Khong co giao dich nao thuc hien truoc day
+// Transfer
+SorryCanMakeThis=	Xin loi! Ban khong the thuc hien giao dich nay
+RecipID=	ID nhan
+RecipName=	Ten nguoi nhan
+Amount=	So tien
+Submit=	Dong y? (y/n)>
+TransDoing= Giao dich dang thuc hien
+// Withdraw
+TransCancel=	Giao dich da huy bo
+// Check balance
+YourBalance=	Do du hien tai:
+// Login
+SystemLogin=	DANG NHAP HE THONG
+CardId=	Card ID
+PinCode=	Ma PIN
+SorryLocked=	Xin loi! The nay dang bi tam khoa. Xin hay lien he he thong ngan hang Anybank de mo khoa.
+InvalidPin=	PIN khong hop le
+IncorrectPin=	Ma PIN khong chinh xac
+PressAny=	Nhan phim bat ki de tiep tuc. Nhan ESC de thoat . . .
+SorryTemp=	Xin loi! The cua ban tam thoi bi giu lai. Hay lien he ngan hang Anybank gan nhat de lay lai.
+InvalidCard=	The khong hop le
+AmountLow=	So tien khong du de thuc hien giao dich
+BalanceNotEnough=	So du khong du de thuc hien giao dich
+BalanceAfter=	So du sau khi giao dich khong duoc thap hon 50000 VND
+// Print index
+Time=	Thoijan
+Date=	Ngay
+Amount=	SoTien
+Balance=	So zu
+Type=	Loai
+TransID=	ID tuong tac
+Name=	Ten

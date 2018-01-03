@@ -17,6 +17,8 @@
 #include <time.h>
 #include <ctime>
 #include <vector>
+
+#define string_size 256
 #define atm_owner_fee 4/10000 // 0.04%
 
 #define dot '.'
@@ -26,9 +28,12 @@
 #define dash '_'
 #define colon ':'
 #define space ' '
+#define asterisk '*'
 #define slash '/'
 #define dendl "\n\n"
+#define br cout << endl
 #define pause system("pause")
+#define clear system("cls")
 #define dline "_________________________________________________________\n"
 // Color
 #define red SetConsoleTextAttribute(out, 12)
@@ -39,11 +44,6 @@
 #define grey SetConsoleTextAttribute(out, 7)
 using namespace std;
 
-// GLOBAL VARIABLE
-HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
-time_t theTime = time(NULL);
-struct tm *aTime = localtime(&theTime);
-int limit = 0;
 
 string getpassword(const string& prompt = "Enter password> ")
 {
@@ -85,6 +85,8 @@ string getpassword(const string& prompt = "Enter password> ")
 	return result;
 }
 
+// STRUCTURES
+
 struct BankAcc
 {
 	char ID[15];
@@ -117,6 +119,12 @@ struct session
 	char name_passive[32]; // Ten tai khoan doi tac
 };
 
+struct command
+{
+	char *name;
+	char *content;
+};
+
 struct columns
 {
 	int c1;
@@ -133,20 +141,14 @@ struct color
 	int color1;
 	int color2;
 	string type;
-	/* color_code = "color1 color2 difer/same"
-	* if (type == same)
-		{
-			border = color1;
-			text = color2;
-		}
-	else
-		{
-			border1 = color1;
-			border2 = color2;
-		}
-	*
-	*/
 };
+
+// GLOBAL VARIABLE
+HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+time_t theTime = time(NULL);
+struct tm *aTime = localtime(&theTime);
+int limit = 0;
+vector <command> al;
 
 // MAIN FUNCTIONS
 void initial(linklist &l);
@@ -167,53 +169,58 @@ bool transfer(linklist &l, char *ID, double amount, char *ID_passive, string tra
 void reviewTransactions(char *ID); // Xem lai noi zung jao zich
 bool changePIN(linklist &l, char *ID, char *NewPIN);
 void deposite(linklist &l, char *ID, double cash); // Nap tien
+void printReceipt(linklist l, char *ID, string type, double); // In bien lai
+
+// Featured 
+double inputNum(); // Nhâp· sô´, nêu´ nhâp· ki´ tu· se~ bi· vang ra ngoai`
+void stopCondition(int &limit); // Gioi´ han· sô´ lân` nhâp· sai
+bool isFileEmpty(char *url); // Kiêm^ tra data file có rông~ không
+bool isLocked(linklist l, char *id); // Khóa tài khoan^ sau 3 lân` nhâp· sai ma~ PIN
+double convertCurrency(double Amount, char *from, char *to); // Chuyen doi ty gia tien te
+void chooseLanguage(vector <command> &al); // Chon ngon ngu
+void loadLanguage(vector <command> &command_list, string lang); // Tai ngon ngu
+string print(vector <command> al, string command_name); // In thong bao
+void askPrintRec(linklist l, char *ID, string type, double cash); // Hoi nguoi dung in bien lai
 
 // Other functions
+void initial(command &cm); // Khoi tao command
 string getTime();
 string getDate();
 char *getURL(char *file_name, char *folder); // DIEU CHINH DIA CHI FILES 
 char *convertStoC(string s); // Convert string to char*
 string convertI2S(long long num); //Convert integer to string
-double convertCurrency(double Amount, char *from, char *to); // Chuyen doi ty gia tien te
-void alert(char *string); // To mau thong bao
-void paintGreen(char *string);
-void paintRed(char *string);
-void paintYellow(char *string);
-void paintWhite(char *string);
+void alert(string string); // To mau thong bao
+void paintGreen(string string);
+void paintRed(string string);
+void paintYellow(string string);
+void paintWhite(string string);
 void paintWhite();
 void eraseColor();
-double inputNum();
 void printBankLabel();
-void printReceipt(linklist l, char *ID, string type, double); // In bien lai
 char randomChar();
 string randomString(int);
 void waiting(int);
-void drawFunction(char *function_name, char*, color code);
+void drawFunction(string, string, color code);
 char *separateField(char *source, char *field, int &from, char separate_by);
-bool isFileEmpty(char *url);
 void printIndex(char *url);
-void stopCondition(int &limit);
 void align(columns &c);
-void hold(int);
+void holding(int);
 void welcome(int);
 void goodbye();
 string displayCurrency(double amount, char *currency);
 string setPrecision(double amount, int streamsize);
 void setColor(int colorcode);
 color setColor(int color1, int color2, string type);
-bool isLocked(linklist l, char *id);
-void printLine(int length);
+string printLine(int length, char c);
 
 // ++++++++++++++++++ MAIN +++++++++++++++++++
 
 int main()
 {
 	welcome(11);
-	cout << dtab;
-	pause;
-	system("cls");
-	cout << fixed;
-	cout << setprecision(2);
+	cout << dtab; pause; clear;
+	chooseLanguage(al);
+	cout << fixed << setprecision(2); // In 2 so thap phan
 	linklist l;
 	initial(l);
 	loadData(l);
@@ -223,7 +230,7 @@ int main()
 	if (p == NULL)
 	{
 		cout << tab << dline << endl << dtab;
-		cout << "Login failed. Please take back the card!\n";
+		cout << print(al, "LoginFail");
 		cout << dtab;
 		pause;
 	}
@@ -236,14 +243,14 @@ int main()
 			printBankLabel();
 			color color;
 			color = setColor(11, 7, "same");
-			drawFunction("1. BALANCE ENQUIRY", "2. WITHDRAW MONEY", color);
-			drawFunction("3. TRANSFER MONEY", "4. VIEW TRANSACTIONS", color);
+			drawFunction("1. " + print(al, "BalanceEnquiry"), "2. " + print(al, "Withdraw"), color);
+			drawFunction("3. " + print(al, "Transfer"), "4. " + print(al, "ViewTrans"), color);
 			color = setColor(11, 12, "difer");
-			drawFunction("5. CHANGE PIN CODE", "6. DEPOSITE", color);
+			drawFunction("5. " + print(al, "ChangePin"), "6. " + print(al, "Deposite"), color);
 			color = setColor(11, 11, "difer");
-			drawFunction("0. GETBACK CARD", "right", color);
+			drawFunction("0. " + print(al, "Getback"), "right", color);
 			cout << tab << dline << endl;
-			cout << tab << "Choose the service: ";
+			cout << tab << print(al, "ChooseService") << colon << space;
 			cin >> choice;
 
 
@@ -263,28 +270,16 @@ int main()
 			switch (choice)
 			{
 			case '1':
-				alert("BALANCE ENQUIRY");
+				alert(print(al, "BalanceEnquiry"));
 				cout << tab;
 				checkBalance(l, ID);
-				cout << endl << tab << dline << endl << dtab;
-				cout << "Do you want to print a receipt? (y/n)" << tab;
-				selection = getch();
-				cout << endl;
-				if (selection == 'y' || selection == 'Y'|| selection == 13)
-				{
-					cout << dtab << "Printing ";
-					printReceipt(l, ID, NULL, 0);
-					waiting(4);
-					cout << endl;
-					cout << dtab << "Done" << endl << tab;
-					pause;
-				}
-
+				cout << endl << tab << dline << endl;
+				askPrintRec(l, ID, "", 0);
 				break;
 			case '2':
-				alert("WITHDRAW MONEY");
+				alert(print(al, "Withdraw"));
 				// Nhap
-				cout << dtab << "Enter Amount: ";
+				cout << dtab << print(al, "EnterAmount") << tab << colon << space;
 				amount = inputNum();
 				cout << tab << dline << endl << tab;
 				// Thuc thi
@@ -292,50 +287,28 @@ int main()
 				// Kiem tra
 				if (cash != 0.0)
 				{
-					cout << dtab << "Transaction was successful!" << endl;
+					cout << dtab << print(al, "TransSuccess") << endl;
 					cout << endl << tab << dline << endl;
-					cout << dtab << "Do you want to print a receipt? (y/n) >";
-					selection = getch();
-					cout << endl;
-					if (selection == 'y' || selection == 'Y'|| selection == 13)
-					{
-						cout << dtab << "Printing ";
-						printReceipt(l, ID, "with", cash);
-							waiting(4);
-						cout << endl;
-						cout << dtab <<"Done" << endl << dtab;
-						pause;
-					}
+					askPrintRec(l, ID, "with", cash);
 				}
 				break;
 			case '3':
-				alert("TRANSFER");
+				alert(print(al, "Transfer"));
 				// Nhap
-				cout << dtab << "Enter receipt ID: ";
+				cout << dtab << print(al, "EnterRecID") << tab << colon << space;
 				cin >> recipient;
-				cout << dtab << "Enter Amount\t: ";
+				cout << dtab << print(al, "EnterAmount") << tab << colon << space;
 				amount = inputNum();
 				cout << tab << dline << endl;
 				// Thuc thi
 				checkTransaction = transfer(l, ID, amount, recipient, "rece");
 				if (checkTransaction)
 				{
-					cout << dtab << "Transaction was successful!" << endl;
+					cout << dtab << print(al, "TransSuccess") << endl;
 					cout << endl << tab << dline << endl;
-					cout << dtab << "Do you want to print a receipt? (y/n) >";
-					selection = getch();
-					cout << endl;
-					if (selection == 'y' || selection == 'Y'|| selection == 13)
-					{
-						cout << dtab << "Printing ";
-						printReceipt(l, ID, "send", amount);
-							waiting(4);
-						cout << endl;
-						cout << dtab <<"Done" << endl << dtab;
-						pause;
-					}
+					askPrintRec(l, ID, "send", amount);
 					cout << endl << tab << dline << endl;
-					cout << dtab << "Do you want to do other transtaction? (y/n)!";
+					cout << dtab << print(al, "AskOtherTrans");
 					selection = getch();
 					if (selection == 'n')
 						goto exit;
@@ -351,25 +324,25 @@ int main()
 				do { // Kiem tra hop le
 					stopCondition(limit);
 					system("cls");
-					alert("CHANGE PIN");
-					cout << dtab << "New pin\t: ";
+					alert(print(al, "ChangePin"));
+					cout << dtab << print(al, "NewPin") << tab << colon << space;
 					string temp_pin = getpassword(""); cout << endl;
 					NewPIN = convertStoC(temp_pin);
 
 					if (limit == 1 && !isvalid(NewPIN))
 					{
 						Beep(400, 400);
-						cout << tab << dline << endl <<  dtab << "Invalid PIN\n" << dtab;
+						cout << tab << dline << endl <<  dtab << print(al, "InvalidPin") << endl << dtab;
 						pause;
 					}
 				} while (!isvalid(NewPIN));
 				if (changePIN(l, ID, NewPIN))
-					cout << tab << dline << endl << dtab << "Change PIN succesfully!\n";
+					cout << tab << dline << endl << dtab << print(al, "ChangePinSuccess") << endl;
 				Sleep(2000);
 				break;
 			case '6':
 				Beep(400, 400);
-				cout << dtab << "Sorry! This function is building\n" << dtab;
+				cout << dtab << print(al, "SorryBuilding") << endl << dtab;
 				pause;
 				break;
 			case '0':
@@ -377,8 +350,8 @@ int main()
 			exit:default:
 				cout << endl;
 				cout << tab << dline << endl;
-				cout << dtab << (char)3 << " Thank you for using our service! " << (char)3;
-				hold(4);
+				cout << dtab << (char)3 << space << print(al, "ThankUsing") << space << (char)3 << space;
+				holding(4);
 				exit(1);
 				break;
 			}
@@ -394,6 +367,24 @@ int main()
 // ****************** MAIN FUNCTIONS ********************
 //_______________________________________________________
 
+
+void askPrintRec(linklist l, char *ID, string type, double cash)
+{
+	cout << dtab << print(al, "AskPrintReceipt") << tab;
+	char selection = getch();
+	cout << endl;
+	
+	if (selection == 'y' || selection == 'Y'|| selection == 13)
+	{
+		cout << dtab << print(al, "Printing"); br;
+		waiting(4);
+		printReceipt(l, ID, type, cash);
+		cout << endl;
+		cout << dtab << print(al, "Done") << endl << dtab;
+		pause;
+	}
+}
+
 void printReceipt(linklist l, char *ID, string type, double cash)
 {
 	ofstream gi;
@@ -405,21 +396,21 @@ void printReceipt(linklist l, char *ID, string type, double cash)
 	gi << setprecision(2);
 	if (p != NULL)
 	{
-		char url[128] = "BienLai.txt";
+		char url[string_size] = "BienLai.txt";
 		gi.open(url);
-		gi << tab << dline << endl;
-		gi << ttab << ttab << tab << "ANY BANK" << endl;
-		gi << tab << dline << endl;
+		gi << setw(4) << space << dline << endl;
+		gi << setw(50) << "ANY BANK" << endl;
+		gi << setw(4) << space << dline << endl;
 		gi << tab << "LOCATION: ";
 		gi << setw(20) << "53 VO VAN NGAN" << endl;
-		gi << setw(34) << "F. LINH CHIEU, THU DUC DIST." << setw(20) << "NY" << dendl;
+		gi << setw(40) << "F. LINH CHIEU, THU DUC DIST." << setw(16) << "NY" << dendl;
 		gi << tab << "CARD NO: " << p->data.ID << dendl;
 		gi << setw(20) << "Date" << setw(10) << "Time" << setw(14) << "Terminal" << endl;
 		gi << setw(20) << getDate() << setw(10) << getTime() << setw(14) << randomString(6) << dendl;
 		gi << tab << "SEQ NBR:" << setw(10) << 1000 + rand() % 9000;
 		if (type != "")
 		{
-			gi << setw(18) << "AMT:" << setw(20) << displayCurrency(cash, p->data.currency) << endl;
+			gi << setw(14) << "AMT:" << setw(20) << displayCurrency(cash, p->data.currency) << endl;
 			double fee; // Phí chuyên^ tiên`
 			if (type == "send")
 				 fee = cash * atm_owner_fee;
@@ -432,7 +423,7 @@ void printReceipt(linklist l, char *ID, string type, double cash)
 			gi << dendl << endl;
 		gi << tab << "AVAILABLE BALANCE" << setw(30) << displayCurrency(p->data.balance, p->data.currency) << endl;
 		gi << tab << "BALANCE" << setw(40) << displayCurrency(p->data.balance, p->data.currency) << dendl;
-		gi << dtab << tab << (char)3 << "Thank you for using our service!" << (char)3 << endl;
+		gi << dtab << tab << (char)3 << space << "Thank you for using our service!" << space << (char)3 << endl;
 	}
 }
 
@@ -453,13 +444,13 @@ bool changePIN(linklist &l, char *ID, char *NewPIN)
 	int isDuplicate; // Kiem tra trung ma pin cu~
 	isDuplicate = strcmp(NewPIN, CurrentPIN); // 0: trùng
 	if (isDuplicate == 0)
-		cout << dtab << "New PIN can not be the same with the current.\n";
+		cout << dtab << print(al, "NewPinCannot") << endl;
 	limit = 0;
 	while (!isvalid(NewPIN) || isDuplicate == 0) // Nêu´ trùng nhau
 	{
 		stopCondition(limit);
 
-		cout << dtab << "New PIN\t: ";
+		cout << dtab << print(al, "NewPin") << tab << colon << space;
 		string temp_pin = getpassword(""); cout << endl;
 		NewPIN = convertStoC(temp_pin);
 
@@ -473,20 +464,20 @@ bool changePIN(linklist &l, char *ID, char *NewPIN)
 	do { // Kiem tra pin co khop khong
 		do { // Kiem tra hop le
 			stopCondition(limit);
-			cout << dtab << "Confirm\t: ";
+			cout << dtab << print(al, "Confirm") << tab << colon << space;
 			string temp_pin = getpassword(""); cout << endl;
 			confirm = convertStoC(temp_pin);
 
 			if (limit == 1 && !isvalid(confirm))
 			{
-				cout << tab << dline << endl << dtab << "Invalid PIN\n" << dtab;
+				cout << tab << dline << endl << dtab << print(al, "InvalidPin") << endl << dtab;
 				pause;
 			}
 		} while (!isvalid(confirm));
 		stopCondition(limit);
 		isMatch = strcmp(NewPIN, confirm);
 		if (isMatch != 0)
-			cout << tab << dline << dtab << "Not match!\n";
+			cout << tab << dline << dtab << print(al, "NotMatch") << endl;
 	} while (isMatch != 0);
 	
 	// **************** CÂP· NHÂT· DATABASE *****************
@@ -507,10 +498,11 @@ void reviewTransactions(char *ID)
 	{
 		Beep(400, 400);
 		cout << "Opps! Not found the data file of \"" << url << "\"." << endl << tab;
+		doc.close();
 		return;
 	}
-
-	char *line = new char[128];
+	
+	char *line = new char[string_size];
 	strcpy(line, "");
 	session s;
 	char amount[14];
@@ -520,15 +512,14 @@ void reviewTransactions(char *ID)
 	// DOC FILE
 	// Bo qua 2 zòng chi^ muc·
 	string temp;
-	char temp_date[128];
 	getline(doc, temp);
 	getline(doc, temp);
-
+	
 	bool isFileEmpty = true;
 	int i, j;
 	while (!doc.eof())
 	{
-		doc.getline(line, 128);
+		doc.getline(line, string_size);
 		i = 0; j = 0;
 		while (i < strlen(line))
 		{
@@ -550,7 +541,8 @@ void reviewTransactions(char *ID)
 			s.amount = atoi(amount);
 			s.balance = atoi(balance);
 		}
-		if (strlen(line) > 0)
+		
+		if (strlen(line) > 0) // Nêu´ file line doc· duoc· không fai^ la` line rông~
 			session_list.push_back(s);
 
 		if (strlen(s.name_passive) < 1)
@@ -560,13 +552,15 @@ void reviewTransactions(char *ID)
 			return;
 		}
 	}
+	doc.close();
+
 
 	// Xuat len man hinh
 	cout << "****************************** TRANSACTION HISTORY *****************************" << endl;
 	printIndex("");
 
 	if (isFileEmpty)
-		cout << tab << dline << endl << dtab << "Sorry! There have no data write down before.\n";
+		cout << tab << dline << endl << dtab << print(al, "SorryNoData") << endl;
 
 	columns c;
 	align(c);
@@ -590,7 +584,7 @@ bool transfer(linklist &l, char *ID, double amount, char *ID_passive, string tra
 	if (strcmpi(ID, ID_passive) == 0)
 	{
 		Beep(400, 400);
-		cout << dtab << "Sorry! You can not make this transaction.\n" << dtab;
+		cout << dtab << print(al, "SorryCanMakeThis") << endl << dtab;
 		pause;
 		return false;
 	}
@@ -611,24 +605,23 @@ bool transfer(linklist &l, char *ID, double amount, char *ID_passive, string tra
 	}
 	else // Thuc hien giao dich
 	{
-		cout << dtab << "************** Confirm **************" << endl << dtab
+		cout << dtab << printLine(14, asterisk) << space << print(al, "Confirm") << printLine(14, asterisk) << endl << dtab
 			// Xac nhan ID nhan tien
-			<< "* Recipient ID\t: ";
-		paintWhite(ID_passive);
+			<< asterisk << space << print(al, "RecipID") << colon << tab; paintWhite(ID_passive);
 		cout << endl << dtab;
 
-		cout << "* Recipient Name: ";
+		cout << asterisk << space << print(al, "RecipName") << colon << space;
 		paintWhite(pj->data.name);
 
 		cout << endl << dtab;
-		cout << "* Amount\t: ";
+		cout << asterisk << space << print(al, "Amount") << tab << colon << space;
 
 		paintWhite();
 		cout << amount << space << pi->data.currency << endl;
 		eraseColor();
 		cout << endl;
 
-		cout << dtab << "<> Submit? (y/n)>";
+		cout << dtab << "<>" << print(al, "Submit");
 		char choice = getch();
 		cout << endl;
 		if (choice == 'y' || choice == 'Y' || choice == 13) // Dông` ý giao zich·
@@ -638,8 +631,7 @@ bool transfer(linklist &l, char *ID, double amount, char *ID_passive, string tra
 			// Xu li tai khoan nhan tien
 			if (cash != 0.0) // Kiem tra neu tien da nhan duoc
 			{
-				cout << dtab << "The transaction is doing ";
-				hold(3);
+				cout << dtab << print(al, "TransDoing") << space; holding(3);
 				cout << endl;
 				// Chuyen doi so tien tuong ung theo don vi cua ID nhan tien
 				cash = convertCurrency(cash, pi->data.currency, pj->data.currency); 
@@ -675,7 +667,7 @@ double withDraw(linklist &l, char *ID, double amount, char *ID_passive, char *na
 				{
 					Beep(400, 400);
 					cout << endl << tab << dline << endl << dtab;
-					cout << "Do you want to do the other transaction? (y/n)>";
+					cout << print(al, "AskOtherTrans");
 					char choice = getch();
 					cout << endl;
 					if (choice != 'n' && choice != 'N')
@@ -687,7 +679,7 @@ double withDraw(linklist &l, char *ID, double amount, char *ID_passive, char *na
 					counter = 0;
 				}
 				// Nhap lai
-				cout << dtab << "Enter Amount: ";
+				cout << dtab << print(al, "EnterAmount") << tab << colon << space;
 				amount = inputNum();
 				checkInput = isvalid(amount, p->data.balance, p->data.currency);
 			}
@@ -697,14 +689,14 @@ double withDraw(linklist &l, char *ID, double amount, char *ID_passive, char *na
 				if (transaction_type == "with")
 				{
 					// Xac nhan so tien rut
-					cout << endl << dtab << "************** Confirm ***************" << endl
-						<< dtab	<< "* Amount: " << amount << space << p->data.currency << endl 
-						<< dtab << "* Agree? (y/n) >";
+					cout << endl << dtab << printLine(14, asterisk) << print(al, "Confirm") << printLine(14, asterisk) << endl
+						<< dtab	<< asterisk << space << print(al, "Amount") << colon << space << amount << space << p->data.currency << endl 
+						<< dtab << asterisk << space << print(al, "Submit");
 					char choice = getch();
 					cout << endl << tab;
 					if (choice == 'n' || choice == 'N')
 					{
-						cout << ttab << "The transaction is canceled!\n";
+						cout << ttab << print(al, "TransCancel") << endl;
 						checkTransaction = false;
 						break;
 					}
@@ -733,7 +725,7 @@ void checkBalance(linklist l, char *ID)
 	node *p;
 	for (p = l.pHead; p != NULL; p = p->pNext)
 		if (strcmpi(p->data.ID, ID) == 0)
-			cout << "Your current balance: " << p->data.balance << space << p->data.currency << endl << tab;
+			cout << dtab << print(al, "YourBalance") << colon << space << p->data.balance << space << p->data.currency << endl;
 	SetConsoleTextAttribute(out, 7);
 }
 
@@ -741,7 +733,7 @@ node *login(linklist &l)
 {
 	char *ID = new char[15];
 	char *pin = new char[7];
-	alert("SYSTEM LOGIN");
+	alert(print(al, "SystemLogin"));
 	cout << endl;
 
 	// Enter the ID
@@ -749,7 +741,7 @@ node *login(linklist &l)
 	do {
 		stopCondition(limit);
 		cout << dtab;
-		paintGreen("Card ID");
+		paintGreen(print(al, "CardId"));
 		cout << tab << colon << space;
 		fflush(stdin); cin >> ID;
 	} while (strlen(ID) != 14);
@@ -775,7 +767,7 @@ node *login(linklist &l)
 		if (isLocked(l, p->data.ID))
 		{
 			Beep(400, 400);
-			cout << tab << dline << endl << "Sorry! This card is temporary locked. Please contact the Anybank system to unlock\n";
+			cout << tab << dline << endl << print(al, "SorryLocked") << endl;
 			Sleep(3);
 			goodbye();
 		}
@@ -787,19 +779,19 @@ node *login(linklist &l)
 			do { // Kiem tra PIN co hop le khong
 				stopCondition(limit);
 				system("cls");
-				alert("SYSTEM LOGIN");
+				alert(print(al, "SystemLogin"));
 				cout << endl << dtab;
-				paintGreen("Card ID");
+				paintGreen(print(al, "CardId"));
 				cout << tab << colon << space << ID << endl << tab;
 				cout << tab;
-				paintGreen("PIN code");
-				cout << colon << space;
+				paintGreen(print(al, "PinCode"));
+				cout << tab << colon << space;
 				string temp_pin = getpassword(""); cout << endl;
 				pin = convertStoC(temp_pin);
 				if (strlen(pin) != 6 && limit < 3)
 				{
 					Beep(400, 400);
-					cout << dtab << "Invalid PIN\n" << dtab;
+					cout << dtab << print(al, "InvalidPin") << endl << dtab;
 					pause;
 				}
 
@@ -816,10 +808,10 @@ node *login(linklist &l)
 				if (e < 3)
 				{
 					cout << tab << dline << endl << dtab;
-					paintRed("Incorrect PIN code!");
+					paintRed(print(al, "IncorrectPin"));
 					cout << endl;	
 					// Hoi nguoi zung co muon thoat hay khong
-					cout << dtab << "Press any key to try again. Press ESC to quit . . .";
+					cout << dtab << print(al, "PressAny");
 					char c = getch();
 					if (c == 27)
 						exit(1);
@@ -830,8 +822,7 @@ node *login(linklist &l)
 					strcpy(p->data.pin, "locked");
 					writeData(l);
 					writeHistory(l, p->data.ID, 0, "Not Applicable", "N/A", "lock");
-					red; cout << tab << dline << endl << "Sorry! Your card is temporarily locked. "
-						<< "Please contact the nearest bank to get back.\n"; grey;
+					red; cout << tab << dline << endl << print(al, "SorryTemp") << endl; grey;
 					cout << dtab; pause;
 					exit(1);
 				}
@@ -840,10 +831,31 @@ node *login(linklist &l)
 	}
 	else
 	{
-		paintRed("\t\tInvalid card.\n");
+		cout << dtab;
+		paintRed(print(al, "InvalidCard")); br;
 	}
 
 	return p;
+}
+
+void chooseLanguage(vector <command> &al)
+{
+	printBankLabel();
+	cout << dendl << dendl;
+	cout << dtab << "Choose language" << endl;
+	royal; cout << tab << dline << endl; grey;
+	cout << dtab << "1. English\n" 
+		<< dtab << "2. Vietnamese\n";
+	royal; cout << tab << dline << endl; grey;
+	cout << dtab << "Choose the service: ";
+	char c = getch();
+	switch(c)
+	{
+	case '1': loadLanguage(al, "en"); break;
+	case '2': loadLanguage(al, "vi"); break;
+	default: loadLanguage(al, "en"); break;
+	}
+	clear;
 }
 
 //__________________________________________________________
@@ -851,6 +863,7 @@ node *login(linklist &l)
 // ****************** RELATED FUNCTIONS ********************
 //__________________________________________________________
 
+// Kiem tra tinh trang ID có bi· khóa hay không
 bool isLocked(linklist l, char *id)
 {
 	node *p;
@@ -864,51 +877,46 @@ bool isLocked(linklist l, char *id)
 	else
 		return false;
 }
-
-color setColor(int color1, int color2, string type)
+// Kiem tra so tien nhap co hop le hay khong
+bool isvalid(double amount, double balance, char *currency)
 {
-	color c;
-	c.color1 = color1;
-	c.color2 = color2;
-	c.type = type;
-	return c;
-}
-
-string setPrecision(double amount, int streamsize)
-{
-	stringstream stream;
-	stream << fixed << setprecision(streamsize) << amount;
-	string sAmount = stream.str();
-	return sAmount;
-}
-
-string displayCurrency(double amount, char *currency)
-{
-	string s = "";
-	if (strcmpi(currency, "VND") == 0)
-		s = s + setPrecision(amount, 2) + space + 'd';
-	else if (strcmpi(currency, "USD") == 0)
-		s = s + "$" + setPrecision(amount, 2);
-	else if (strcmpi(currency, "EUR") == 0)
-		s = s + "€" + setPrecision(amount, 2);
-	else if (strcmpi(currency, "JPY") == 0)
-		s = s + "¥" + setPrecision(amount, 2);
-	else
-		s = s + setPrecision(amount, 2) + space + currency;
-	return s;
-}
-// Tách riêng môi~ thuôc· tính 
-char *separateField(char *source, char *field, int &from, char separate_by)
-{
-	int j = 0;
-	while (source[from] != separate_by)
+	bool result = true;
+	double amount_VND = convertCurrency(amount, currency, "VND");
+	if (amount_VND < 50000)
 	{
-		field[j++] = source[from++];
+		Beep(400, 400);
+		cout << dtab << print(al, "AmountLow") << endl;
+		result = false;
 	}
-	field[j] = NULL;
-	return field;
+	else if (amount > balance)
+	{
+		Beep(400, 400);
+		cout << dtab << print(al, "BalanceNotEnough") << endl;
+		result = false;
+	}
+	else if (convertCurrency(balance - amount, currency, "VND") < 50000)
+	{
+		Beep(400, 400);
+		cout << dtab << print(al, "BalanceAfter") << endl;
+		result = false;
+	}
+	cout << endl;
+	return result;
 }
-
+// Kiem tra PIN
+bool isvalid(char *PIN)
+{
+	if (strlen(PIN) != 6)
+		return false;
+	int i;
+	for (i = 0; i < strlen(PIN); i++)
+	{
+		if (PIN[i] < '0' || PIN[i] > '9')
+			return false;
+	}
+	return true;
+}
+// Hien thi database
 void displayData(linklist l)
 {
 	node *p = new node;
@@ -917,7 +925,7 @@ void displayData(linklist l)
 		cout << p->data.ID << tab << p->data.pin << endl << tab;
 	}
 }
-
+// In chi muc
 void printIndex(char *url)
 {
 	ofstream gi;
@@ -926,13 +934,13 @@ void printIndex(char *url)
 	if (URLState != 0)
 	{
 		gi.open(url, std::ios::out);
-		out << tab << "Time"
-			<< tab << "Date"
-			<< dtab << "Amount"
-			<< tab << "Balance"
-			<< dtab << "Trans type"
-			<< tab << "Transaction ID"
-			<< dtab << "Name" << endl;
+		out << tab << print(al, "Time")
+			<< tab << print(al, "Date")
+			<< dtab << print(al, "Amount")
+			<< tab << print(al, "Balance")
+			<< dtab << print(al, "Type")
+			<< tab << print(al, "TransID")
+			<< dtab << print(al, "Name") << endl;
 		out << tab << dline;
 		gi.close();
 	}
@@ -940,17 +948,16 @@ void printIndex(char *url)
 	{
 		columns c;
 		align(c);
-		out << "Time"
-			<< setw(c.c2) << "Date"
-			<< setw(c.c3) << "Amount"
-			<< setw(c.c4) << "Balance"
-			<< setw(c.c5) << "Trans type"
-			<< setw(c.c6) << "Transaction ID"
-			<< setw(c.c7) << "Name" << endl;
+		out << print(al, "Time")
+			<< setw(c.c1) << print(al, "Date")
+			<< setw(c.c2) << print(al, "Amount")
+			<< setw(c.c3) << print(al, "Balance")
+			<< setw(c.c4) << print(al, "Type")
+			<< setw(c.c5) << print(al, "TransID")
+			<< setw(c.c6) << print(al, "Name") << endl;
 		out << tab << dline;
 	}
 }
-
 // Ghi zu lieu vao file "TheTu.dat";
 void writeData(linklist l)
 {
@@ -1143,10 +1150,119 @@ void initial(linklist &l)
 	l.pTail = NULL;
 }
 
+void align(columns &c)
+{
+	c.c1 = 8;
+	c.c2 = 11;
+	c.c3 = 11;
+	c.c4 = 12;
+	c.c5 = 6;
+	c.c6 = 15;
+	c.c7 = 15;
+}
+
 //_________________________________________
 //
 // ********** OTHER FUNCTIONS *************
 //_________________________________________
+
+
+
+// Tách riêng môi~ thuôc· tính 
+char *separateField(char *source, char *field, int &from, char separate_by)
+{
+	int j = 0;
+	while (source[from] != separate_by)
+	{
+		field[j++] = source[from++];
+	}
+	field[j] = NULL;
+	return field;
+}
+
+string print(vector <command> al, string command_name)
+{
+	int i;
+	for (i = 0; i < al.size(); i++)
+	{
+		if (al[i].name == command_name)
+		{
+			return al[i].content;
+		}
+	}
+	return "Language data file lost!\n";
+}
+
+void initial(command &cm)
+{
+	cm.name = new char[string_size];
+	cm.content = new char[string_size];
+}
+
+void loadLanguage(vector <command> &command_list, string lang)
+{
+
+	ifstream doc;
+	if (lang == "en")
+		doc.open("Language/en.txt");
+	if (lang == "vi")
+		doc.open("Language/vi.txt");
+	if (!doc)
+	{
+		cout << "Oop! Not found the language file of " << lang << ".txt" << endl;
+		pause;
+		return;
+	}
+
+	command cm;
+	
+	char *line = new char[string_size];
+	int i, j;
+	while(!doc.eof())
+	{
+		doc.getline(line, string_size);
+		
+		if (line[0] == slash && line[1] == slash) // Nêu´ line vua` doc· duoc. la comments
+			doc.getline(line, string_size); // Doc· line moi´
+
+		initial(cm); // Khoi^ tao· cho dia· chi^ con tro^ moi´
+		i = 0; j = 0;
+		while (i < strlen(line))
+		{
+			separateField(line, cm.name, i, '=');
+			i+=2;
+			separateField(line, cm.content, i, NULL);
+		}
+
+		if (strlen(line) > 0)
+			command_list.push_back(cm);
+	}
+	
+}
+// Zâu´ thâp· fân
+string setPrecision(double amount, int streamsize)
+{
+	stringstream stream;
+	stream << fixed << setprecision(streamsize) << amount;
+	string sAmount = stream.str();
+	return sAmount;
+}
+// Hiên^ thi· don vi· tiên` tê·
+string displayCurrency(double amount, char *currency)
+{
+	string s = "";
+	if (strcmpi(currency, "VND") == 0)
+		s = s + setPrecision(amount, 2) + space + 'd';
+	else if (strcmpi(currency, "USD") == 0)
+		s = s + "$" + setPrecision(amount, 2);
+	else if (strcmpi(currency, "EUR") == 0)
+		s = s + "€" + setPrecision(amount, 2);
+	else if (strcmpi(currency, "JPY") == 0)
+		s = s + "¥" + setPrecision(amount, 2);
+	else
+		s = s + setPrecision(amount, 2) + space + currency;
+	return s;
+}
 
 void welcome(int color)
 {
@@ -1163,7 +1279,15 @@ void welcome(int color)
 	SetConsoleTextAttribute(out, 7);
 }
 
-void hold(int seconds)
+void goodbye()
+{
+	cout << tab << dline << endl;
+	cout << dtab << (char)3 << space << print(al, "ThankUsing") << space << (char)3 << space;
+	holding(4);
+	exit(1);
+}
+
+void holding(int seconds)
 {
 	int n = 0;
 	for (int i = 0; i < seconds*2; i++)
@@ -1182,23 +1306,24 @@ void hold(int seconds)
 	}
 }
 
-void align(columns &c)
+void waiting(int second)
 {
-	c.c1 = 8;
-	c.c2 = 11;
-	c.c3 = 11;
-	c.c4 = 12;
-	c.c5 = 6;
-	c.c6 = 15;
-	c.c7 = 15;
-}
-
-void goodbye()
-{
-	cout << tab << dline << endl;
-	cout << dtab << (char)3 << " Thank you for using our service! " << (char)3 << tab;
-	hold(4);
-	exit(1);
+	int ms = 250;
+	for (int i = 0; i < second; i++)
+	{
+		cout << '-';
+		Sleep(ms);
+		cout << '\b';
+		cout << '\\';
+		Sleep(ms);
+		cout << '\b';
+		cout << '|';
+		Sleep(ms);
+		cout << '\b';
+		cout << '/';
+		Sleep(ms);
+		cout << '\b';
+	}
 }
 
 void stopCondition(int &limit)
@@ -1207,7 +1332,7 @@ void stopCondition(int &limit)
 	if (limit > 10)
 	{
 		cout << tab << dline << endl;
-		cout << dtab << (char)3 << " Thank you for using our service! " << (char)3 << tab;
+		cout << dtab << (char)3 << print(al, "ThankUsing") << (char)3 << tab;
 		Sleep(4000);
 		exit(1);
 	}
@@ -1217,8 +1342,17 @@ void setColor(int colorcode)
 {
 	SetConsoleTextAttribute(out, colorcode);
 }
+// Cài dat· màu sac´ cho menu chuc´ nang (draw function)
+color setColor(int color1, int color2, string type)
+{
+	color c;
+	c.color1 = color1;
+	c.color2 = color2;
+	c.type = type;
+	return c;
+}
 // draw function color_code (function_name, site_or_function_name)
-void drawFunction(char *function_name, char *site, color code)
+void drawFunction(string function_name, string site, color code)
 {
 	int text_color;
 	int border_left;
@@ -1236,7 +1370,7 @@ void drawFunction(char *function_name, char *site, color code)
 		text_color = 7;
 	}
 
-	if (strcmpi(site,"left") == 0)
+	if (site == "left")
 	{
 		// Line 1
 		setColor(border_left);  cout << setw(3) << "   _______________________" << endl;
@@ -1249,7 +1383,7 @@ void drawFunction(char *function_name, char *site, color code)
 		// Line 4
 		cout << setw(4) << "  |_______________________/" << endl; grey;
 	}
-	else if (strcmpi(site,"right") == 0)
+	else if (site == "right")
 	{
 		// Line 1
 		setColor(border_right);  cout << setw(76) << "_______________________" << endl;
@@ -1301,8 +1435,8 @@ void drawFunction(char *function_name, char *site, color code)
 void printBankLabel()
 {
 	cout << endl;
-	cout << ttab << ttab << dtab;
-	yellow;  cout << (char)4 << space;
+	cout << setw(63);
+	yellow;  cout << "<><><>" << space << (char)4 << space;
 	white; cout << "WORLD BANK" << endl;
 	grey;
 	int i;
@@ -1311,35 +1445,35 @@ void printBankLabel()
 	cout << dendl;
 }
 
-void paintRoyal(char *string)
+void paintRoyal(string string)
 {
 	SetConsoleTextAttribute(out, 11);
 	cout << string;
 	SetConsoleTextAttribute(out, 7);
 }
 
-void paintRed(char *string)
+void paintRed(string string)
 {
 	SetConsoleTextAttribute(out, 12);
 	cout << string;
 	SetConsoleTextAttribute(out, 7);
 }
 
-void paintWhite(char *string)
+void paintWhite(string string)
 {
 	SetConsoleTextAttribute(out, 15);
 	cout << string;
 	SetConsoleTextAttribute(out, 7);
 }
 
-void paintGreen(char *string)
+void paintGreen(string string)
 {
 	SetConsoleTextAttribute(out, 10);
 	cout << string;
 	SetConsoleTextAttribute(out, 7);
 }
 
-void paintYellow(char *string)
+void paintYellow(string string)
 {
 	SetConsoleTextAttribute(out, 14);
 	cout << string;
@@ -1356,7 +1490,7 @@ void eraseColor()
 	SetConsoleTextAttribute(out, 7);
 }
 
-void alert(char *string)
+void alert(string string)
 {
 	printBankLabel();
 	// Line 1
@@ -1364,7 +1498,7 @@ void alert(char *string)
 	// Line 2
 	cout << "\t\t*" << setw(41) << "*\n";
 	// Line 3
-	cout << "\t\t*" << dtab;
+	cout << "\t\t*" << setw(30);
 	paintGreen(string);
 	yellow; cout << "\t\t*\n";
 	// Line 4
@@ -1402,7 +1536,7 @@ string getDate()
 
 char *getURL(char *ID, char* folder)
 {
-	char *url = new char[128];
+	char *url = new char[string_size];
 	// /* ATTENTION! CHANGE URL TO YOUR CURRENT URL OF DIRECTORY OF MACHINE
 	// * (Trong truong hop may khong nhan dien duoc dia chi tuong doi):
 	// * strcpy(url, "D:\\Source\\DSA\\Team-Project\\Team-Project\\"); */
@@ -1490,7 +1624,7 @@ double convertCurrency(double Amount, char *from, char *to)
 
 	return result;
 }
-
+// Kiem tra chuôi~ ki tu co fai^ la chuoi ki tu sô´ hay không
 bool isNumber(char *num)
 {
 	int i;
@@ -1503,7 +1637,7 @@ bool isNumber(char *num)
 	}
 	return true;
 }
-
+// Chi^ cho fep´ nhâp· kí tu· sô´
 double inputNum()
 {
 	double num = 0;
@@ -1548,7 +1682,7 @@ double inputNum()
 	}
 	num = atoi(line);*/
 }
-
+// Kiêm^ tra file co´ rông~ hay không
 bool isFileEmpty(char *url)
 {
 	ifstream fi;
@@ -1563,65 +1697,6 @@ bool isFileEmpty(char *url)
 	}
 	fi.close();
 	return content == "";
-}
-// Kiem tra so tien nhap co hop le hay khong
-bool isvalid(double amount, double balance, char *currency)
-{
-	bool result = true;
-	double amount_VND = convertCurrency(amount, currency, "VND");
-	if (amount_VND < 50000)
-	{
-		Beep(400, 400);
-		cout << dtab << "The amount is too low!" << endl;
-		result = false;
-	}
-	else if (amount > balance)
-	{
-		Beep(400, 400);
-		cout << dtab << "The balance is not enough!" << endl;
-		result = false;
-	}
-	else if (convertCurrency(balance - amount, currency, "VND") < 50000)
-	{
-		Beep(400, 400);
-		cout << dtab << "The balance after withdraw is not allow lower than 50000 VND." << endl;
-		result = false;
-	}
-	cout << endl;
-	return result;
-}
-
-bool isvalid(char *PIN)
-{
-	if (strlen(PIN) != 6)
-		return false;
-	int i;
-	for (i = 0; i < strlen(PIN); i++)
-	{
-		if (PIN[i] < '0' || PIN[i] > '9')
-			return false;
-	}
-	return true;
-}
-
-void waiting(int second)
-{
-	int ms = 250;
-	for (int i = 0; i < second; i++)
-	{
-		cout << '-';
-		Sleep(ms);
-		cout << '\b';
-		cout << '\\';
-		Sleep(ms);
-		cout << '\b';
-		cout << '|';
-		Sleep(ms);
-		cout << '\b';
-		cout << '/';
-		Sleep(ms);
-		cout << '\b';
-	}
 }
 
 string randomString(int num_of_char)
@@ -1641,11 +1716,11 @@ char randomChar()
 	return c;
 }
 
-void printLine(int length)
+string printLine(int length, char c)
 {
+	string s = "";
 	int i;
 	for (i = 0; i < length; i++)
-	{
-		cout << dash;
-	}
+		s += c;
+	return s;
 }

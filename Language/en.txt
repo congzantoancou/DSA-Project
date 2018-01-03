@@ -1,0 +1,61 @@
+LoginFail=	Login failed. Please take back the card!
+// Menu
+BalanceEnquiry=	BALANCE ENQUIRY
+Withdraw=	WITHDRAW MONEY
+Transfer=	TRANSFER MONEY
+ViewTrans=	VIEW TRANSACTION
+ChangePin=	CHANGE PIN CODE
+Deposite=	DEPOSITE
+Getback=	GET BACK CARD
+// Switch key
+ChooseService=	Choose the service
+AskPrintReceipt=	Do you want to print a receipt? (y/n)
+Printing=	Printing
+Done=	Done
+EnterAmount=	Enter Amount
+TransSuccess=	Transaction was successful!
+EnterRecID=	Enter Receipt ID
+AskOtherTrans=	Do you want to do other transaction? (y/n)
+NewPin=	New PIN
+InvalidPin=	Invalid PIN
+ChangePinSuccess=	Change PIN successfully!
+SorryBuilding=	Sorry! This function is building
+ThankUsing=	Thank you for using our service!
+// Change PIN
+NewPinCannot=	New PIN can not  be the same with the current.
+Confirm=	Confirm
+NotMatch=	Not Match
+// Review Transaction
+SorryNoData=	Sorry! There have no data write down before.
+// Transfer
+SorryCanMakeThis=	Sorry! You can not make this transaction.
+RecipID=	Recipient ID
+RecipName=	Recipient Name
+Amount=	Amount
+Submit=	Submit? (y/n)>
+TransDoing= The transaction is doing
+// Withdraw
+TransCancel=	The transaction was canceled
+// Check balance
+YourBalance=	Your current balance:
+// Login
+SystemLogin=	SYSTEM LOGIN
+CardId=	Card ID
+PinCode=	PIN code
+SorryLocked=	Sorry! This card is temporary locked. Please contact the Anybank system to unlock
+InvalidPin=	Invalid PIN
+IncorrectPin=	Incorrect PIN code!
+PressAny=	Press any key to try again. Press ESC to quit . . .
+SorryTemp=	Sorry! Your card is temporarily locked. Please contact the nearest bank to get back.
+InvalidCard=	Invalid card
+AmountLow=	The amount is too low
+BalanceNotEnough=	The Balance is not enough
+BalanceAfter=	The balance after withdraw is not allow lower than 50000 VND.
+// Print index
+Time=	Time
+Date=	Date
+Amount=	Amount
+Balance=	Balance
+Type=	Type
+TransID=	Transaction ID
+Name=	Name
