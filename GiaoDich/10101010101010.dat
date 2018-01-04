@@ -1,5 +1,5 @@
-	Time	Date	Amount	Balance	Trans type	Transaction ID	Name
-_________________________________________________________
+Thoijan		Date		Amount		Balance		Trans	Transaction ID	Name
+______________________________________________________________________________________________________
 18:06:40	31/12/2017	1000000.00	8960000.00	with	Not Applicable	Not Applicable
 18:20:27	31/12/2017	1000000.00	7920000.00	with	Not Applicable	Not Applicable
 18:51:23	31/12/2017	200000.00	7712000.00	send	10101010101014	Ngo May
@@ -35,3 +35,5 @@ _________________________________________________________
 01:11:25	04/01/2018	100000.00	1195080.00	with	Not Applicable	N/A
 01:45:07	04/01/2018	100000.00	1095080.00	with	Not Applicable	N/A
 01:52:15	04/01/2018	200000.00	895080.00	with	Not Applicable	N/A
+16:06:12	04/01/2018	0.00	895080.00	lock	Not Applicable	N/A
+22:56:01	04/01/2018	534000.00	1429080.00	rece	10101010101014	Ngo May

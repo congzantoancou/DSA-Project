@@ -1,4 +1,3 @@
-	Time	Date	Amount	Balance	Trans type	Transaction ID	Name
-_________________________________________________________
-18:51:23	31/12/2017	7.49	407.49	rece	10101010101010	La Van Cau
-13:35:29	03/01/2018	37.45	444.94	rece	10101010101010	La Van Cau
+Time		Date		Amount	Balance		Type	Transaction ID	Name
+________________________________________________________________________________
+02:01:01	05/01/2018	2.00	99982.00	with	Not Applicable	N/A

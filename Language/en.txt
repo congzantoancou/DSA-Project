@@ -59,3 +59,7 @@ Balance=	Balance
 Type=	Type
 TransID=	Transaction ID
 Name=	Name
+Select=	Select
+TakeMoney=	Please take your money
+TakeCard=	Please take your card
+InsertCard=	Please insert your card
